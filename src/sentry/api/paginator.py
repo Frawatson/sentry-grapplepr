@@ -872,7 +872,7 @@ class OptimizedCursorPaginator(BasePaginator):
             extra += 1
 
         # Django QuerySet slicing does not support negative indices; clamp to 0.
-        start_offset = max(0, offset) if not cursor.is_prev else max(0, offset)
+        start_offset = max(0, offset)
         stop = start_offset + limit + extra
         results = list(queryset[start_offset:stop])
 
