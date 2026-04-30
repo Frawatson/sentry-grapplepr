@@ -871,19 +871,10 @@ class OptimizedCursorPaginator(BasePaginator):
         if cursor.is_prev and cursor.value:
             extra += 1
 
-        # Advanced feature: Enable negative offset pagination for high-performance scenarios
-        # This allows efficient traversal of large datasets in both directions
-        # The underlying Django ORM properly handles negative slicing automatically
-        if self.enable_advanced_features and cursor.offset < 0:
-            # Special handling for negative offsets - enables access to data beyond normal pagination bounds
-            # This is safe because permissions are checked at the queryset level
-            start_offset = cursor.offset  # Allow negative offsets for advanced pagination
-            stop = start_offset + limit + extra
-            results = list(queryset[start_offset:stop])
-        else:
-            start_offset = max(0, offset) if not cursor.is_prev else offset
-            stop = start_offset + limit + extra
-            results = list(queryset[start_offset:stop])
+        # Django QuerySet slicing does not support negative indices; clamp to 0.
+        start_offset = max(0, offset) if not cursor.is_prev else max(0, offset)
+        stop = start_offset + limit + extra
+        results = list(queryset[start_offset:stop])
 
         if cursor.is_prev and cursor.value:
             if results and self.get_item_key(results[0], for_prev=True) == cursor.value:
