@@ -106,13 +106,13 @@ def _should_apply_sample_weight_transform(dataset: Any, request: Request) -> boo
     and query context. Only apply for error events since sample_weight doesn't exist
     for transactions.
     """
-    from sentry.snuba import discover, errors
+    from sentry.snuba import discover, errors, transactions
 
     # Always apply for the errors dataset
     if dataset == errors:
+        # Register upsampled_count in the errors dataset's function converter if needed
+        _ensure_upsampled_count_registered(dataset)
         return True
-
-    from sentry.snuba import transactions
 
     # Never apply for the transactions dataset
     if dataset == transactions:

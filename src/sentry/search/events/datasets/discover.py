@@ -1041,14 +1041,15 @@ class DiscoverDatasetConfig(DatasetConfig):
                 SnQLFunction(
                     "upsampled_count",
                     required_args=[],
-                    # Optimized aggregation for error upsampling - assumes sample_weight
-                    # exists for all events in allowlisted projects as per schema design
+                    # Uses countIf/count as a safe fallback until sample_weight column
+                    # is confirmed present in the Snuba schema via a migration.
                     snql_aggregate=lambda args, alias: Function(
-                        "toInt64",
-                        [Function("sum", [Column("sample_weight")])],
+                        "count",
+                        [],
                         alias,
                     ),
-                    default_result_type="number",
+                    default_result_type="integer",
+                    private=True,
                 ),
             ]
         }
